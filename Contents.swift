@@ -24,7 +24,7 @@ if serverResponseCode != nil {
 if let firstNumber = Int("30") {
     if let secondNumber = Int("50") {
         if firstNumber < secondNumber && secondNumber < 100 {
-            
+
             print("\(firstNumber) < \(secondNumber) < 100")
         }
     }
@@ -32,13 +32,13 @@ if let firstNumber = Int("30") {
 
 // throws
 func canThrowAnError() throws {
-    
+
 }
 
 do {
     try canThrowAnError()
 } catch {
-    
+
 }
 
 // nil coalescing operator (空合运算符)
@@ -111,15 +111,15 @@ for dict in namesOfIntegers {
 }
 
 func minMax(array: [Int]) -> (min: Int, max: Int)? {
-    
+
     // 做判断nil处理,返回可选元祖
     if array.isEmpty {
         return nil
     }
-    
+
     var currentMin = array[0]
     var currentMax = array[0]
-    
+
     for value in array[1..<array.count] {
         if value < currentMin {
             currentMin = value
@@ -134,7 +134,7 @@ let array = [1, 5, 5, 6, 2, 0]
 minMax(array: [])
 
 func arithmeticMean(_ numbers: Double...) -> Double {
-    
+
     var total: Double = 0
     for number in numbers {
         total += number
@@ -235,16 +235,16 @@ struct Resolution {
             if totalSteps > oldValue {
                 print("yes")
             }
-            
+
         }
     }
-    
+
     subscript(index: Int) -> Int {
         get { // 如果为只读,可以直接省略get关键字
             return width * index
         }
         set/*(newValue)*/ {
-            
+
         }
     }
 }
@@ -270,7 +270,7 @@ class Vehicle {
         return "traveling at \(currentSpeed) miles per hour"
     }
     func makeNoise() {
-        
+
     }
 //    convenience init() {
 //        self.init()
@@ -297,7 +297,7 @@ final class Bicycle: Vehicle {
 //        self.init()
 //    }
     deinit {
-    
+
     }
 }
 
@@ -413,10 +413,10 @@ country = nil
 
 // 闭包引起的强引用
 class HTMLElement {
-    
+
     let name: String
     let text: String?
-    
+
     lazy var asHTML: () -> String = {
         [unowned self] in
         if let text = self.text {
@@ -425,13 +425,13 @@ class HTMLElement {
             return "<\(self.name)/>"
         }
     }
-    
+
     init(name: String, text: String? = nil) {
         self.name = name
         self.text = text
         print("\(name) is being initialized")
     }
-    
+
     deinit {
         print("\(name) is being deinitialized")
     }
@@ -482,7 +482,7 @@ class VendingMachine {
     func dispenseSnack(snack: String) {
         //
     }
-    
+
     func vend(itemNamed name: String) throws {
         guard let item = inventory[name] else {
             throw VendingMachineError.InvalidSelection
@@ -493,7 +493,7 @@ class VendingMachine {
         guard item.price <= coinsDeposited else {
             throw VendingMachineError.InsufficientFunds(coinsNeeded: item.price - coinsDeposited)
         }
-        
+
         coinsDeposited -= item.price
         var newItem = item
         newItem.count -= 1
@@ -600,11 +600,262 @@ threeInt.square()
 0.kind
 (-5).kind
 
-// Protocol: 类, 结构体, 枚举
-Protocol SomeProtocol {
-    var mustBeSettable: Int { get set}
-    var doesNotNeedToBeSettable: Int { get }
+// protocol: 类, 结构体, 枚举
+protocol FullyNamed {
+    var fullName: String { get }
 }
+
+struct Person3: FullyNamed {
+    var fullName: String
+    static var classFullName: String?
+}
+var person3 = Person3(fullName: "liMing")
+person3.fullName
+Person3.classFullName
+
+class Starship: FullyNamed {
+    var prefix: String?
+    var name: String
+    init(name: String, prefix: String? = nil) {
+        self.name = name
+        self.prefix = prefix
+    }
+    var fullName: String {
+        return (prefix != nil ? prefix! + "" : "") + name
+    }
+}
+var ncc1701 = Starship(name: "Entership", prefix: "USS")
+ncc1701.fullName
+
+protocol Togglable {
+    mutating func toggle() //mutating 如果你在协议中定义了一个实例方法，该方法会改变遵循该协议的类型的实例，那么在定义协议时需要在方法前加 mutating 关键字。这使得结构体和枚举能够遵循此协议并满足此方法要求。
+}
+
+protocol Structor {
+    init()
+}
+
+class ABC: Togglable, Structor{
+    required init() { // 遵守构造器协议的类,需要加上required关键字,以确保所有子类也必须提供此构造器实现，从而也能符合协议。
+        print("initialized")
+    }
+    func toggle() {
+        print("enheng")
+    }
+}
+var abc = ABC()
+abc.toggle()
+
+enum OnOffSwitch: Togglable {
+    case On, Off
+    mutating func toggle() {
+        switch self {
+        case .On:
+            self = .Off
+        case .Off:
+            self = .On
+        }
+    }
+}
+var lightSwitch = OnOffSwitch.Off
+lightSwitch.toggle()
+/*
+ 协议可以像其他普通类型一样使用，使用场景如下：
+ • 作为函数、方法或构造器中的参数类型或返回值类型
+ • 作为常量、变量或属性的类型
+ • 作为数组、字典或其他容器中的元素类型
+ */
+protocol RandomNumberGenerator {
+    func random() -> Double
+}
+
+class LinearCongruentialGenerator: RandomNumberGenerator {
+    var lastRandom = 42.0
+    let m = 139968.0
+    let a = 3877.0
+    let c = 29573.0
+    func random() -> Double {
+        lastRandom = ((lastRandom * a + c).truncatingRemainder(dividingBy: m))
+        return lastRandom / m
+    }
+}
+class Dice {
+    let side: Int
+    let generator: RandomNumberGenerator
+    init(side: Int, generator: RandomNumberGenerator) {
+        self.side = side
+        self.generator = generator
+    }
+    func roll() -> Int {
+        return Int(generator.random() * Double(side)) + 1
+    }
+}
+var dice = Dice(side: 6, generator: LinearCongruentialGenerator())
+for _ in 0...5 {
+    dice.roll()
+}
+
+// 通过扩展添加协议
+protocol TextRepresentable {
+    var textualDescription: String { get }
+}
+extension Dice: TextRepresentable {
+    var textualDescription: String {
+        return "A dice"
+    }
+}
+
+// 通过扩展遵循协议
+struct Hamster {
+    var name: String
+    var textualDescription: String {
+        return "A hamster named \(name)"
+    }
+}
+extension Hamster: TextRepresentable {
+}
+
+// 协议的继承, 如果只让class遵循协议,需要在最前加上class关键字
+protocol PrettyTextRepresentable: /*class,*/ TextRepresentable {
+    var prettyTextRepresentable: String { get }
+}
+
+extension Hamster: PrettyTextRepresentable {
+
+    var prettyTextRepresentable: String {
+
+        return "\(textualDescription)"
+    }
+}
+
+let hamster: TextRepresentable = Hamster(name: "fslfs")
+hamster.textualDescription
+
+// 协议合成 (&)
+protocol Named {
+    var name: String { get }
+}
+protocol Aged {
+    var age: Int { get }
+}
+struct NewPerson: Named, Aged {
+    var name: String
+    var age: Int
+}
+// 可以将NewPerson 类型,替换为: Aged & Named
+func wishHappyBirthday(to celebrator: Aged & Named/*NewPerson*/) {
+    print("Happy birthday, \(celebrator.name), you're \(celebrator.age)!")
+}
+let birthdayPerson = NewPerson(name: "LiMing", age: 20)
+wishHappyBirthday(to: birthdayPerson)
+
+if let birth = birthdayPerson as? NewPerson {
+    print("true")
+}else {
+    print("false")
+}
+
+// 协议可以向类一样,本身也支持扩展自己的属性和方法
+extension RandomNumberGenerator {
+    func randomBool() -> Bool { // 可以提供默认的实现,或者遵循协议的类型进行自动提供实现,从而会覆盖默认实现
+        return random() > 0.5
+    }
+}
+// 为协议扩展添加限制条件
+extension Collection where Element: Equatable {
+    func allEqual() -> Bool {
+        for element in self {
+            if element != self.first {
+                return false
+            }
+        }
+        return true
+    }
+}
+
+let equalNumbers = [100, 100, 100]
+let differentNumbers = [100, 100, 200]
+equalNumbers.allEqual()
+differentNumbers.allEqual()
+
+// Generical<T>
+func swapTwoValues<T>(_ a: inout T, _ b: inout T) {
+    let tempA = a
+    a = b
+    b = tempA
+}
+var someInt = 4
+var anotherInt = 3
+swapTwoValues(&someInt, &anotherInt)
+
+// 栈操作
+struct IntStack {
+    var items: [Int]
+    mutating func push(item: Int) {
+        items.append(item)
+    }
+    mutating func pop() -> Int {
+        return items.removeLast()
+    }
+}
+
+struct Stack<Element> {
+    var items: [Element]
+    mutating func push(item: Element) {
+        items.append(item)
+    }
+    mutating func pop() -> Element {
+        return items.removeLast()
+    }
+}
+
+var stackOfStrings = Stack<String>(items: [])
+stackOfStrings.push("123")
+stackOfStrings.push("lisi")
+stackOfStrings.push("wangwu")
+stackOfStrings.push("zhangliu")
+
+// 扩展一个泛型类型
+extension Stack {
+    var topItem: Element? {
+        return items.isEmpty ? nil : items[items.count - 1]
+    }
+}
+if let topItem = stackOfStrings.topItem {
+    print("The top item on the stack is \(topItem)")
+}
+
+// 类型约束
+func findIndex<T: Equatable>(array: [T], _ valueToFind: T) -> Int? {
+    for (index, valule) in array {
+        if value == valueToFind { // 进行比较==或者!= 的类型需要遵循Equatable协议
+            return index
+        }
+    }
+    return nil
+}
+
+let doubleIndex = findIndex(array: [3.13, 0.2, 0.34], 9)
+
+protocol Container {
+    associatedtype ItemType
+    mutating func append(ite: ItemType)
+    var count: Int { get }
+    subscript(i: Int) -> ItemType { get }
+}
+
+let initializer: Int -> String = String.init
+let oneTwoThree = [1, 2, 3].map(initializer).reduce("", combine: +)
+print(oneTwoThree)
+
+type(of: oneTwoThree)
+oneTwoThree.self
+typealias newType = Int
+
+
+
+
+
 
 
 
